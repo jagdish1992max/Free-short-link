@@ -3,6 +3,9 @@
 <head>
   <title>Viral Link Generator Pro</title>
 
+  <!-- QR CODE LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
     body{
       margin:0;
@@ -43,11 +46,19 @@
       background:#3b82f6;
       color:white;
       cursor:pointer;
-      font-size:16px;
+      font-size:14px;
     }
 
     button:hover{
       background:#2563eb;
+    }
+
+    .copy{
+      background:#22c55e;
+    }
+
+    .danger{
+      background:#ef4444;
     }
 
     .result{
@@ -55,27 +66,28 @@
       word-break:break-all;
     }
 
-    .copy{
-      background:#22c55e;
-      margin-top:10px;
+    a{
+      color:#38bdf8;
     }
   </style>
 </head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <body> <div id="qrcode"></div>
-<button onclick="showHistory()">📜 Show History</button>
-<button onclick="clearAll()">🧹 Clear Data</button>
+<body>
 
 <div class="box">
 
   <h2>🔗 Viral Link Generator Pro</h2>
 
-  <input id="url" placeholder="Paste your long URL" />
+  <input id="url" placeholder="Paste your long URL here" />
 
-  <button onclick="gen()">Generate Link</button>
+  <button onclick="generate()">🚀 Generate Link</button>
 
   <div class="result" id="out"></div>
+
+  <div id="qrcode" style="margin-top:15px;"></div>
+
+  <button onclick="showHistory()">📜 Show History</button>
+  <button class="danger" onclick="clearAll()">🧹 Clear All Data</button>
 
 </div>
 
@@ -83,11 +95,12 @@
 
 let lastLink = "";
 
-function gen(){
+// Generate short link
+function generate(){
   let url = document.getElementById("url").value;
 
   if(!url){
-    alert("Enter URL");
+    alert("Please enter URL");
     return;
   }
 
@@ -102,16 +115,48 @@ function gen(){
   document.getElementById("out").innerHTML = `
     <p>🔗 Short Link:</p>
     <a href="${short}" target="_blank">${short}</a>
-    <button class="copy" onclick="copy()">Copy Link</button>
+    <button class="copy" onclick="copy()">📋 Copy Link</button>
+    <button onclick="saveFav()">⭐ Save Favorite</button>
   `;
+
+  // QR code generate
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), short);
 }
 
+// Copy link
 function copy(){
   navigator.clipboard.writeText(lastLink);
   alert("Copied!");
 }
 
-// redirect system
+// Save favorite
+function saveFav(){
+  let favs = JSON.parse(localStorage.getItem("favs") || "[]");
+  favs.push(lastLink);
+  localStorage.setItem("favs", JSON.stringify(favs));
+  alert("Saved to favorites ⭐");
+}
+
+// Show history
+function showHistory(){
+  let favs = JSON.parse(localStorage.getItem("favs") || "[]");
+
+  if(favs.length === 0){
+    alert("No history found");
+    return;
+  }
+
+  alert("Favorites:\n\n" + favs.join("\n"));
+}
+
+// Clear all data
+function clearAll(){
+  localStorage.clear();
+  alert("All data cleared 🧹");
+}
+
+// Redirect system
 window.onload = function(){
   let id = window.location.hash.replace("#","");
 
@@ -120,7 +165,7 @@ window.onload = function(){
     if(url){
       window.location.href = url;
     } else {
-      document.body.innerHTML = "<h2>Link not found ❌</h2>";
+      document.body.innerHTML = "<h2>❌ Link not found</h2>";
     }
   }
 }
@@ -128,4 +173,4 @@ window.onload = function(){
 </script>
 
 </body>
-    </html>
+</html>
