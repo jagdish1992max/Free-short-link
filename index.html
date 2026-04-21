@@ -3,8 +3,9 @@
 <head>
   <title>Viral Link Generator Pro</title>
 
-  <!-- QR CODE LIBRARY -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <style>
     body{
@@ -24,7 +25,6 @@
       background:rgba(255,255,255,0.05);
       padding:20px;
       border-radius:15px;
-      box-shadow:0 0 20px rgba(0,0,0,0.5);
       backdrop-filter:blur(10px);
     }
 
@@ -34,7 +34,6 @@
       margin-top:10px;
       border:none;
       border-radius:8px;
-      outline:none;
     }
 
     button{
@@ -46,19 +45,10 @@
       background:#3b82f6;
       color:white;
       cursor:pointer;
-      font-size:14px;
     }
 
     button:hover{
       background:#2563eb;
-    }
-
-    .copy{
-      background:#22c55e;
-    }
-
-    .danger{
-      background:#ef4444;
     }
 
     .result{
@@ -66,123 +56,84 @@
       word-break:break-all;
     }
 
-    a{
-      color:#38bdf8;
-    }
+    a{color:#38bdf8;}
   </style>
 </head>
-  <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAXbgxsy5yHnZinjn4RsGxd6tWJsg8jdw8",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "XXXX",
-    appId: "XXXX"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <body>
 
 <div class="box">
 
   <h2>🔗 Viral Link Generator Pro</h2>
 
-  <input id="url" placeholder="Paste your long URL here" />
+  <input id="url" placeholder="Paste your long URL" />
 
   <button onclick="generate()">🚀 Generate Link</button>
 
   <div class="result" id="out"></div>
 
-  <div id="qrcode" style="margin-top:15px;"></div>
-
-  <button onclick="showHistory()">📜 Show History</button>
-  <button class="danger" onclick="clearAll()">🧹 Clear All Data</button>
-
 </div>
 
 <script>
 
-let lastLink = "";
+  // 🔥 FIREBASE CONFIG (CHANGE THIS)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAXbgxsy5yHnZinjn4RsGxd6tWJsg8jdw8",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-// Generate short link
-function generate(){
-  let url = document.getElementById("url").value;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  if(!url){
-    alert("Please enter URL");
-    return;
+  // 🚀 GENERATE LINK
+  function generate(){
+    let url = document.getElementById("url").value;
+
+    if(!url){
+      alert("Enter URL");
+      return;
+    }
+
+    db.collection("links").add({
+      url: url,
+      clicks: 0,
+      created: Date.now()
+    }).then((docRef) => {
+
+      let id = docRef.id;
+      let short = window.location.href.split("#")[0] + "#" + id;
+
+      document.getElementById("out").innerHTML = `
+        🔗 Short Link: <br><br>
+        <a href="${short}" target="_blank">${short}</a>
+      `;
+    });
   }
 
-  let id = Math.random().toString(36).substring(2,8);
+  // 🔁 REDIRECT + CLICK TRACK
+  window.onload = function(){
+    let id = window.location.hash.replace("#","");
 
-  localStorage.setItem(id,url);
+    if(id){
+      let ref = db.collection("links").doc(id);
 
-  let short = window.location.href.split("#")[0] + "#" + id;
+      ref.get().then((doc) => {
+        if(doc.exists){
+          let data = doc.data();
 
-  lastLink = short;
+          ref.update({
+            clicks: data.clicks + 1
+          });
 
-  document.getElementById("out").innerHTML = `
-    <p>🔗 Short Link:</p>
-    <a href="${short}" target="_blank">${short}</a>
-    <button class="copy" onclick="copy()">📋 Copy Link</button>
-    <button onclick="saveFav()">⭐ Save Favorite</button>
-  `;
-
-  // QR code generate
-  document.getElementById("qrcode").innerHTML = "";
-  new QRCode(document.getElementById("qrcode"), short);
-}
-
-// Copy link
-function copy(){
-  navigator.clipboard.writeText(lastLink);
-  alert("Copied!");
-}
-
-// Save favorite
-function saveFav(){
-  let favs = JSON.parse(localStorage.getItem("favs") || "[]");
-  favs.push(lastLink);
-  localStorage.setItem("favs", JSON.stringify(favs));
-  alert("Saved to favorites ⭐");
-}
-
-// Show history
-function showHistory(){
-  let favs = JSON.parse(localStorage.getItem("favs") || "[]");
-
-  if(favs.length === 0){
-    alert("No history found");
-    return;
-  }
-
-  alert("Favorites:\n\n" + favs.join("\n"));
-}
-
-// Clear all data
-function clearAll(){
-  localStorage.clear();
-  alert("All data cleared 🧹");
-}
-
-// Redirect system
-window.onload = function(){
-  let id = window.location.hash.replace("#","");
-
-  if(id){
-    let url = localStorage.getItem(id);
-    if(url){
-      window.location.href = url;
-    } else {
-      document.body.innerHTML = "<h2>❌ Link not found</h2>";
+          window.location.href = data.url;
+        }
+      });
     }
   }
-}
 
 </script>
 
