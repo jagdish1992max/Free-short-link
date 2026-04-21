@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <title>Viral Link Generator Pro</title>
+  <title>Short Link Pro</title>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -11,53 +9,25 @@
 
   <style>
     body{
-      margin:0;
       font-family:Arial;
-      background:linear-gradient(135deg,#0f172a,#1e293b);
+      background:#0f172a;
       color:white;
       display:flex;
       justify-content:center;
       align-items:center;
       height:100vh;
     }
-
     .box{
-      width:90%;
-      max-width:500px;
-      background:rgba(255,255,255,0.05);
+      width:300px;
       padding:20px;
-      border-radius:15px;
-      backdrop-filter:blur(10px);
+      background:#1e293b;
+      border-radius:10px;
     }
-
-    input{
+    input,button{
       width:100%;
-      padding:12px;
+      padding:10px;
       margin-top:10px;
-      border:none;
-      border-radius:8px;
     }
-
-    button{
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      border:none;
-      border-radius:8px;
-      background:#3b82f6;
-      color:white;
-      cursor:pointer;
-    }
-
-    button:hover{
-      background:#2563eb;
-    }
-
-    .result{
-      margin-top:15px;
-      word-break:break-all;
-    }
-
     a{color:#38bdf8;}
   </style>
 </head>
@@ -65,25 +35,30 @@
 <body>
 
 <div class="box">
+  <h2>🔗 Short Link Generator</h2>
 
-  <h2>🔗 Viral Link Generator Pro</h2>
+  <input id="url" placeholder="Enter URL">
 
-  <input id="url" placeholder="Paste your long URL" />
+  <button onclick="generate()">Generate</button>
 
-  <button onclick="generate()">🚀 Generate Link</button>
-
-  <div class="result" id="out"></div>
-
+  <div id="out"></div>
 </div>
 
 <script>
-
-  
+  // 🔥 Firebase Config (PUT YOUR VALUES HERE)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
+    authDomain: "free-short-2827c.firebaseapp.com",
+    projectId: "free-short-2827c",
+    storageBucket: "free-short-2827c.appspot.com",
+    messagingSenderId: "997627808794",
+    appId: "1:997627808794:web:794aaa06b8bc43ac6855a3"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // 🚀 GENERATE LINK
+  // 🚀 Generate Link
   function generate(){
     let url = document.getElementById("url").value;
 
@@ -96,19 +71,18 @@
       url: url,
       clicks: 0,
       created: Date.now()
-    }).then((docRef) => {
+    }).then((doc) => {
 
-      let id = docRef.id;
+      let id = doc.id;
       let short = window.location.href.split("#")[0] + "#" + id;
 
-      document.getElementById("out").innerHTML = `
-        🔗 Short Link: <br><br>
-        <a href="${short}" target="_blank">${short}</a>
-      `;
+      document.getElementById("out").innerHTML =
+        "🔗 <a href='" + short + "' target='_blank'>" + short + "</a>";
+
     });
   }
 
-  // 🔁 REDIRECT + CLICK TRACK
+  // 🔁 Redirect + Click Counter
   window.onload = function(){
     let id = window.location.hash.replace("#","");
 
@@ -124,26 +98,13 @@
           });
 
           window.location.href = data.url;
+        } else {
+          document.body.innerHTML = "<h2>Link not found ❌</h2>";
         }
       });
     }
   }
-
 </script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
-    authDomain: "free-short-2827c.firebaseapp.com",
-    projectId: "free-short-2827c",
-    storageBucket: "free-short-2827c.appspot.com",
-    messagingSenderId: "997627808794",
-    appId: "1:997627808794:web:794aaa06b8bc43ac6855a3"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  console.log("🔥 Firebase Connected");
-</script>
 </body>
 </html>
