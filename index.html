@@ -12,19 +12,30 @@
 <style>
 
 body{
-font-family:Arial;
-background:#0f172a;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#0f172a,#1e293b);
 color:white;
+margin:0;
 padding:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+.header{
+font-size:28px;
+font-weight:bold;
+margin-bottom:20px;
 text-align:center;
 }
 
 .box{
-max-width:500px;
-margin:auto;
 background:#1e293b;
-padding:25px;
+padding:20px;
 border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
 }
 
 input{
@@ -36,20 +47,44 @@ margin-top:10px;
 }
 
 button{
-margin-top:10px;
-padding:10px 20px;
+padding:10px 16px;
 border:none;
 border-radius:8px;
 background:#22c55e;
 color:white;
 cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+background:#16a34a;
+}
+
+.stats{
+display:flex;
+gap:15px;
+margin-top:20px;
+flex-wrap:wrap;
+}
+
+.stat{
+flex:1;
+background:#334155;
+padding:15px;
+border-radius:10px;
+text-align:center;
 }
 
 .card{
-margin-top:15px;
-padding:15px;
 background:#334155;
+padding:15px;
 border-radius:10px;
+margin-top:15px;
+}
+
+a{
+color:#38bdf8;
+word-break:break-all;
 }
 
 </style>
@@ -57,29 +92,43 @@ border-radius:10px;
 </head>
 
 <body>
-<button id="redirectBtn" style="display:none;padding:12px 20px;background:#22c55e;border:none;border-radius:8px;color:white;font-size:16px">
-Continue to link
-</button>
- 
-<div class="box">
 
-<h2>🔗 PRO URL Shortener</h2>
+<div class="container">
+
+<div class="header">🔗 PRO URL Shortener</div>
+
+<div class="box">
 
 <input id="url" placeholder="Paste long URL here">
 
 <button onclick="generate()">Generate Link</button>
 
-<div id="out" style="margin-top:15px"></div>
+<div id="out"></div>
 
-<h3 style="margin-top:25px">📊 Dashboard</h3>
+<div class="stats">
+
+<div class="stat">
+<div id="totalLinks">0</div>
+Total Links
+</div>
+
+<div class="stat">
+<div id="totalClicks">0</div>
+Total Clicks
+</div>
+
+</div>
+
+<h3 style="margin-top:20px">📊 Dashboard</h3>
 
 <div id="history"></div>
 
 </div>
 
+</div>
+
 <script>
 
- // 🔥 Firebase Config (PUT YOUR VALUES HERE)
 const firebaseConfig = {
 apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
 authDomain: "free-short-2827c.firebaseapp.com",
@@ -92,8 +141,6 @@ appId: "1:997627808794:web:794aaa06b8bc43ac6855a3"
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-
-
 
 function generate(){
 
@@ -119,7 +166,7 @@ document.getElementById("out").innerHTML=
 `<div class="card">
 <a href="${short}" target="_blank">${short}</a>
 <br><br>
-<button onclick="copyLink('${short}')">📋 Copy</button>
+<button onclick="copyLink('${short}')">Copy</button>
 </div>`;
 
 loadLinks();
@@ -128,17 +175,13 @@ loadLinks();
 
 }
 
-
-
 function copyLink(link){
 
 navigator.clipboard.writeText(link);
 
-alert("Link copied ✅");
+alert("Link copied");
 
 }
-
-
 
 function deleteLink(id){
 
@@ -156,27 +199,25 @@ loadLinks();
 
 }
 
-
-
 function loadLinks(){
 
-db.collection("links")
-
-.orderBy("created","desc")
-
-.get()
+db.collection("links").orderBy("created","desc").get()
 
 .then((snapshot)=>{
 
 let html="";
+let totalLinks=0;
+let totalClicks=0;
 
 snapshot.forEach((doc)=>{
 
 let data=doc.data();
-
 let id=doc.id;
 
 let short=window.location.href.split("#")[0]+"#"+id;
+
+totalLinks++;
+totalClicks+=data.clicks;
 
 html+=`
 
@@ -190,9 +231,9 @@ html+=`
 
 <br><br>
 
-<button onclick="copyLink('${short}')">📋 Copy</button>
+<button onclick="copyLink('${short}')">Copy</button>
 
-<button onclick="deleteLink('${id}')">🗑 Delete</button>
+<button onclick="deleteLink('${id}')">Delete</button>
 
 </div>
 
@@ -202,42 +243,16 @@ html+=`
 
 document.getElementById("history").innerHTML=html;
 
+document.getElementById("totalLinks").innerText=totalLinks;
+
+document.getElementById("totalClicks").innerText=totalClicks;
+
 });
 
 }
-
-
 
 window.onload=function(){
-if(window.location.hash){
 
-let id=window.location.hash.replace("#","");
-
-db.collection("links").doc(id).get()
-
-.then((doc)=>{
-
-if(doc.exists){
-
-let data=doc.data();
-
-db.collection("links").doc(id).update({
-clicks:data.clicks+1
-});
-
-// Adsterra Ad Open
-window.open("https://www.profitablecpmratenetwork.com/ncjbevd76?key=33af4988b6e3baf3f89e24526d911ad4","_blank");
-
-// Original Link Redirect
-setTimeout(()=>{
-window.location=data.url;
-},3000);
-
-}
-
-});
-
- }
 loadLinks();
 
 if(window.location.hash){
@@ -253,23 +268,11 @@ if(doc.exists){
 let data=doc.data();
 
 db.collection("links").doc(id).update({
-
 clicks:data.clicks+1
-
 });
 
 window.location=data.url;
-document.getElementById("redirectBtn").style.display="block";
 
-document.getElementById("redirectBtn").onclick=function(){
-
-  window.open("https://www.profitablecpmratenetwork.com/ncjbevd76?key=33af4988b6e3baf3f89e24526d911ad4","_blank");
-
-  setTimeout(()=>{
-    window.location = data.url;
-  },3000);
-
- }
 }
 
 });
