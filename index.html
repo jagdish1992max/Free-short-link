@@ -69,7 +69,20 @@ a{color:#38bdf8;}
 </div>
 <h3 style="margin-top:20px;">📜 Generated Links</h3>
 <div id="history"></div>
+  <h3 style="margin-top:20px;">📊 Dashboard</h3>
+<div id="history"></div>
 <script>
+  function copyLink(link){
+  navigator.clipboard.writeText(link);
+  alert("Link copied ✅");
+}
+  function deleteLink(id){
+  if(confirm("Delete this link?")){
+    db.collection("links").doc(id).delete().then(()=>{
+      loadLinks();
+    });
+  }
+}
   // 🔥 Firebase Config (PUT YOUR VALUES HERE)
   const firebaseConfig = {
     apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
@@ -86,7 +99,7 @@ a{color:#38bdf8;}
   // 🚀 Generate Link
   function generate(){
     let url = document.getElementById("url").value;
-
+loadLinks();
     if(!url){
       alert("Enter URL");
       return;
@@ -112,7 +125,7 @@ a{color:#38bdf8;}
   window.onload = function(){
     let id = window.location.hash.replace("#","");
 function loadLinks(){
-
+loadLinks();
   db.collection("links").orderBy("created","desc").get()
   .then((snapshot)=>{
 
@@ -137,8 +150,41 @@ function loadLinks(){
     document.getElementById("history").innerHTML = html;
 
   });
+function loadLinks(){
 
-  }
+  db.collection("links").orderBy("created","desc").get()
+  .then((snapshot)=>{
+
+    let html = "";
+
+    snapshot.forEach((doc)=>{
+
+      let data = doc.data();
+      let id = doc.id;
+
+      let short = window.location.href.split("#")[0] + "#" + id;
+
+      html += `
+        <div style="margin-top:15px;padding:15px;background:#1e293b;border-radius:10px">
+          🔗 <a href="${short}" target="_blank">${short}</a>
+          <br><br>
+          📊 Clicks: ${data.clicks}
+          <br><br>
+
+          <button onclick="copyLink('${short}')">📋 Copy</button>
+
+          <button onclick="deleteLink('${id}')">🗑 Delete</button>
+        </div>
+      `;
+
+    });
+
+    document.getElementById("history").innerHTML = html;
+
+  });
+
+        }
+  
     if(id){
       let ref = db.collection("links").doc(id);
 
