@@ -1,208 +1,242 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Short Link Pro</title>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<title>PRO URL Shortener</title>
 
-  <style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<style>
+
 body{
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#0f172a,#111827);
-  color:white;
+font-family:Arial;
+background:#0f172a;
+color:white;
+padding:20px;
+text-align:center;
 }
 
-.container{
-  max-width:600px;
-  margin:100px auto;
-  padding:20px;
-}
-
-.card{
-  background:#1f2937;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+.box{
+max-width:500px;
+margin:auto;
+background:#1e293b;
+padding:25px;
+border-radius:12px;
 }
 
 input{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:8px;
-  border:none;
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+margin-top:10px;
 }
 
 button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
-  background:#3b82f6;
-  color:white;
-  cursor:pointer;
+margin-top:10px;
+padding:10px 20px;
+border:none;
+border-radius:8px;
+background:#22c55e;
+color:white;
+cursor:pointer;
 }
 
-button:hover{
-  background:#2563eb;
+.card{
+margin-top:15px;
+padding:15px;
+background:#334155;
+border-radius:10px;
 }
 
-a{color:#38bdf8;}
-  </style>
+</style>
+
 </head>
 
 <body>
 
 <div class="box">
-  <h2>🔗 Short Link Generator</h2>
 
-  <input id="url" placeholder="Enter URL">
+<h2>🔗 PRO URL Shortener</h2>
 
-  <button onclick="generate()">Generate</button>
+<input id="url" placeholder="Paste long URL here">
 
-}
-  <div id="out"><button onclick="copyLink(short)">Copy Link</button></div>
+<button onclick="generate()">Generate Link</button>
+
+<div id="out" style="margin-top:15px"></div>
+
+<h3 style="margin-top:25px">📊 Dashboard</h3>
+
+<div id="history"></div>
+
 </div>
-<h3 style="margin-top:20px;">📜 Generated Links</h3>
-<div id="history"></div>
-  <h3 style="margin-top:20px;">📊 Dashboard</h3>
-<div id="history"></div>
+
 <script>
-  function copyLink(link){
-  navigator.clipboard.writeText(link);
-  alert("Link copied ✅");
+
+ // 🔥 Firebase Config (PUT YOUR VALUES HERE)
+const firebaseConfig = {
+apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
+authDomain: "free-short-2827c.firebaseapp.com",
+projectId: "free-short-2827c",
+storageBucket: "free-short-2827c.appspot.com",
+messagingSenderId: "997627808794",
+appId: "1:997627808794:web:794aaa06b8bc43ac6855a3"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+
+
+function generate(){
+
+let url=document.getElementById("url").value;
+
+if(url==""){
+alert("Enter URL first");
+return;
 }
-  function deleteLink(id){
-  if(confirm("Delete this link?")){
-    db.collection("links").doc(id).delete().then(()=>{
-      loadLinks();
-    });
-  }
+
+db.collection("links").add({
+url:url,
+clicks:0,
+created:Date.now()
+})
+
+.then((doc)=>{
+
+let short=window.location.href.split("#")[0]+"#"+doc.id;
+
+document.getElementById("out").innerHTML=
+
+`<div class="card">
+<a href="${short}" target="_blank">${short}</a>
+<br><br>
+<button onclick="copyLink('${short}')">📋 Copy</button>
+</div>`;
+
+loadLinks();
+
+});
+
 }
-  // 🔥 Firebase Config (PUT YOUR VALUES HERE)
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJxAwmhWbO_i3Yx_wumiOjg412paUgPxI",
-    authDomain: "free-short-2827c.firebaseapp.com",
-    projectId: "free-short-2827c",
-    storageBucket: "free-short-2827c.appspot.com",
-    messagingSenderId: "997627808794",
-    appId: "1:997627808794:web:794aaa06b8bc43ac6855a3"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
 
-  // 🚀 Generate Link
-  function generate(){
-    let url = document.getElementById("url").value;
+
+function copyLink(link){
+
+navigator.clipboard.writeText(link);
+
+alert("Link copied ✅");
+
+}
+
+
+
+function deleteLink(id){
+
+if(confirm("Delete this link?")){
+
+db.collection("links").doc(id).delete()
+
+.then(()=>{
+
 loadLinks();
-    if(!url){
-      alert("Enter URL");
-      return;
-    }
 
-    db.collection("links").add({
-      url: url,
-      clicks: 0,
-      created: Date.now()
-    }).then((doc) => {
+});
 
-      let id = doc.id;
-      let short = window.location.href.split("#")[0] + "#" + id;
+}
 
-      document.getElementById("out").innerHTML =
-  "🔗 <a href='" + short + "' target='_blank'>" + short + "</a>" +
-  "<div style='margin-top:10px'>📊 Clicks: 0 (live tracking)</div>";
+}
 
-    });
-  }
 
-  // 🔁 Redirect + Click Counter
-  window.onload = function(){
-    let id = window.location.hash.replace("#","");
-function loadLinks(){
-loadLinks();
-  db.collection("links").orderBy("created","desc").get()
-  .then((snapshot)=>{
 
-    let html = "";
-
-    snapshot.forEach((doc)=>{
-
-      let data = doc.data();
-      let id = doc.id;
-
-      let short = window.location.href.split("#")[0] + "#" + id;
-
-      html += `
-        <div style="margin-top:10px;padding:10px;background:#1e293b;border-radius:8px">
-          🔗 <a href="${short}" target="_blank">${short}</a>
-          <br>
-          📊 Clicks: ${data.clicks}
-        </div>
-      `;
-    });
-
-    document.getElementById("history").innerHTML = html;
-
-  });
 function loadLinks(){
 
-  db.collection("links").orderBy("created","desc").get()
-  .then((snapshot)=>{
+db.collection("links")
 
-    let html = "";
+.orderBy("created","desc")
 
-    snapshot.forEach((doc)=>{
+.get()
 
-      let data = doc.data();
-      let id = doc.id;
+.then((snapshot)=>{
 
-      let short = window.location.href.split("#")[0] + "#" + id;
+let html="";
 
-      html += `
-        <div style="margin-top:15px;padding:15px;background:#1e293b;border-radius:10px">
-          🔗 <a href="${short}" target="_blank">${short}</a>
-          <br><br>
-          📊 Clicks: ${data.clicks}
-          <br><br>
+snapshot.forEach((doc)=>{
 
-          <button onclick="copyLink('${short}')">📋 Copy</button>
+let data=doc.data();
 
-          <button onclick="deleteLink('${id}')">🗑 Delete</button>
-        </div>
-      `;
+let id=doc.id;
 
-    });
+let short=window.location.href.split("#")[0]+"#"+id;
 
-    document.getElementById("history").innerHTML = html;
+html+=`
 
-  });
+<div class="card">
 
-        }
-  
-    if(id){
-      let ref = db.collection("links").doc(id);
+🔗 <a href="${short}" target="_blank">${short}</a>
 
-      ref.get().then((doc) => {
-        if(doc.exists){
-          let data = doc.data();
+<br><br>
 
-          ref.update({
-            clicks: data.clicks + 1
-          });
+📊 Clicks: ${data.clicks}
 
-          window.location.href = data.url;
-        } else {
-          document.body.innerHTML = "<h2>Link not found ❌</h2>";
-        }
-      });
-    }
-  }
+<br><br>
+
+<button onclick="copyLink('${short}')">📋 Copy</button>
+
+<button onclick="deleteLink('${id}')">🗑 Delete</button>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("history").innerHTML=html;
+
+});
+
+}
+
+
+
+window.onload=function(){
+
+loadLinks();
+
+if(window.location.hash){
+
+let id=window.location.hash.replace("#","");
+
+db.collection("links").doc(id).get()
+
+.then((doc)=>{
+
+if(doc.exists){
+
+let data=doc.data();
+
+db.collection("links").doc(id).update({
+
+clicks:data.clicks+1
+
+});
+
+window.location=data.url;
+
+}
+
+});
+
+}
+
+}
+
 </script>
 
 </body>
