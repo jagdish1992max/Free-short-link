@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+</head>
+
+<body style="font-family:Arial;background:#0f172a;color:white;padding:20px;">
+
+<h2>🔐 Admin Dashboard</h2>
+
+<input id="pass" type="password" placeholder="Enter password"
+  style="padding:10px;width:200px;" />
+
+<button onclick="login()" style="padding:10px;">Login</button>
+
+<div id="panel" style="display:none;margin-top:20px;"></div>
+
+<script>
+
+const ADMIN_PASS = "1234"; // change this
+
+function login(){
+  let p = document.getElementById("pass").value;
+
+  if(p !== ADMIN_PASS){
+    alert("Wrong Password ❌");
+    return;
+  }
+
+  document.getElementById("panel").style.display = "block";
+  loadData();
+}
+
+function loadData(){
+  let keys = Object.keys(localStorage);
+  let out = "<h3>📊 All Links Data</h3>";
+
+  keys.forEach(k => {
+    try {
+      let data = JSON.parse(localStorage.getItem(k));
+
+      if(data && data.url){
+        out += `
+          <div style="background:#1e293b;padding:10px;margin:10px;border-radius:8px;">
+            🔗 URL: ${data.url} <br>
+            📊 Clicks: ${data.clicks}
+          </div>
+        `;
+      }
+    } catch(e){}
+  });
+
+  document.getElementById("panel").innerHTML = out;
+}
+
+</script>
+
+</body>
+</html>
