@@ -209,7 +209,35 @@ document.getElementById("history").innerHTML=html;
 
 
 window.onload=function(){
+if(window.location.hash){
 
+let id=window.location.hash.replace("#","");
+
+db.collection("links").doc(id).get()
+
+.then((doc)=>{
+
+if(doc.exists){
+
+let data=doc.data();
+
+db.collection("links").doc(id).update({
+clicks:data.clicks+1
+});
+
+// Adsterra Ad Open
+window.open("https://www.profitablecpmratenetwork.com/ncjbevd76?key=33af4988b6e3baf3f89e24526d911ad4","_blank");
+
+// Original Link Redirect
+setTimeout(()=>{
+window.location=data.url;
+},3000);
+
+}
+
+});
+
+ }
 loadLinks();
 
 if(window.location.hash){
