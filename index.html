@@ -57,7 +57,10 @@ border-radius:10px;
 </head>
 
 <body>
-
+<button id="redirectBtn" style="display:none;padding:12px 20px;background:#22c55e;border:none;border-radius:8px;color:white;font-size:16px">
+Continue to link
+</button>
+ 
 <div class="box">
 
 <h2>🔗 PRO URL Shortener</h2>
@@ -228,11 +231,17 @@ clicks:data.clicks+1
 });
 
 window.location=data.url;
-window.open("https://www.profitablecpmratenetwork.com/ncjbevd76?key=33af4988b6e3baf3f89e24526d911ad4","_blank");
+document.getElementById("redirectBtn").style.display="block";
 
-setTimeout(()=>{
-  window.location = data.url;
-},5000);
+document.getElementById("redirectBtn").onclick=function(){
+
+  window.open("https://www.profitablecpmratenetwork.com/ncjbevd76?key=33af4988b6e3baf3f89e24526d911ad4","_blank");
+
+  setTimeout(()=>{
+    window.location = data.url;
+  },3000);
+
+ }
 }
 
 });
